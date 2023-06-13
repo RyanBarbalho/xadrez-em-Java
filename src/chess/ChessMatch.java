@@ -8,13 +8,25 @@ import tabuleiro.Position;
 
 public class ChessMatch {
     private Board board;
+    private int turn;
+    private Color currentPlayer;
 
     public ChessMatch() {
         // crio tabuleiro 8 por 8
         board = new Board(8, 8);
+        turn = 1;
+        currentPlayer = Color.WHITE;
         // inicio o setup
         initialSetup();
 
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public Color getCurrentPlayer() {
+        return currentPlayer;
     }
 
     public ChessPiece[][] getPieces() {
@@ -36,27 +48,33 @@ public class ChessMatch {
         return board.piece(position).possibleMoves();
     }
 
+    // funcao responsavel por executar o movimento
     public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
-        Position source = sourcePosition.toPosition();
-        Position target = targetPosition.toPosition();
-        // valida se existe a peça na source position
-        validateSourcePosition(source);
+        Position source = sourcePosition.toPosition(); // converte a posicao de origem
+        Position target = targetPosition.toPosition(); // converte a posicao de destino
+        validateSourcePosition(source); // se nao existir, lança uma excecao
         validateTargetPosition(source, target);
-        Piece capturedPiece = makeMove(source, target);
+        Piece capturedPiece = makeMove(source, target); // faz o movimento
+        nextTurn();
         return (ChessPiece) capturedPiece;
 
     }
 
+    // funcao responsavel por mover a peca
     private Piece makeMove(Position source, Position target) {
         Piece p = board.removePiece(source); // peca na posicao de origem vai pra posicao de destino
-        Piece capturedPiece = board.removePiece(target); // removi a possivel peca da posicao de destino
-        board.placePiece(p, target);
+        Piece capturedPiece = board.removePiece(target); // remove a possivel peca da posicao de destino
+        board.placePiece(p, target);// coloca a peca na posicao de destino
         return capturedPiece;
     }
 
+    // funcao responsavel por validar a posicao de origem
     private void validateSourcePosition(Position position) {
         if (!board.thereIsAPiece(position)) {
             throw new ChessException("Nao ha nenhuma peca na posiçao de origem");
+        } // downcasting de piece para ChessPiece
+        if (currentPlayer != ((ChessPiece) board.piece(position)).getColor()) {
+            throw new ChessException("A peca escolhida nao e sua");
         }
         if (!board.piece(position).isThereAnyPossibleMove()) {
             throw new ChessException("Nao ha movimentos possiveis para a peca escolhida");
@@ -72,6 +90,12 @@ public class ChessMatch {
     private void placeNewPiece(char column, int row, ChessPiece piece) {
         // coluna e linha do xadrez
         board.placePiece(piece, new ChessPosition(column, row).toPosition());
+    }
+
+    // funcao responsavel por passar o turno
+    private void nextTurn() {
+        turn++;
+        currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
     }
 
     private void initialSetup() {

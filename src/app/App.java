@@ -18,14 +18,15 @@ public class App {
         while (true) {
             try {
                 Ui.clearScreen();
-                Ui.printBoard(chessMatch.getPieces());
+                Ui.printMatch(chessMatch);
                 System.out.println();
                 System.out.println("source: ");
                 ChessPosition source = Ui.readChessPosition(sc);
                 // printar os movimentos possiveis da pessa de origem (source)
                 boolean[][] possibleMoves = chessMatch.possibleMoves(source);
                 Ui.clearScreen();
-                Ui.printBoard(chessMatch.getPieces(), possibleMoves);
+                Ui.printBoard(chessMatch.getPieces(), possibleMoves); // essa funcao sobrecarregada printa os movimentos
+                                                                      // possiveis da peca de origem
 
                 System.out.println();
                 System.out.println("Target: ");
