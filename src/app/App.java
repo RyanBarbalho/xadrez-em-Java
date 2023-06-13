@@ -1,11 +1,11 @@
 package app;
 
 import tabuleiro.Position;
+import tabuleiro.Board;
 
 public class App {
-    public static void main(String[] args) throws Exception {
-        Position pos = new Position(3, 5);
-        System.out.println(pos);
+    public static void main(String[] args) {
+        Board board = new Board(8, 8);
 
     }
 }
