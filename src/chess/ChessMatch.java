@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import chess.pieces.King;
 import chess.pieces.Rook;
 import tabuleiro.Board;
@@ -10,12 +13,15 @@ public class ChessMatch {
     private Board board;
     private int turn;
     private Color currentPlayer;
+    private List<ChessPiece> piecesOnTheBoard;
+    private List<Piece> capturedPieces = new ArrayList<>();
 
     public ChessMatch() {
         // crio tabuleiro 8 por 8
         board = new Board(8, 8);
         turn = 1;
         currentPlayer = Color.WHITE;
+        piecesOnTheBoard = new ArrayList<>();
         // inicio o setup
         initialSetup();
 
@@ -48,7 +54,8 @@ public class ChessMatch {
         return board.piece(position).possibleMoves();
     }
 
-    // funcao responsavel por executar o movimento
+    // funcao responsavel por executar o movimento (verifica se a posicao de origem
+    // e destino sao validas)
     public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
         Position source = sourcePosition.toPosition(); // converte a posicao de origem
         Position target = targetPosition.toPosition(); // converte a posicao de destino
@@ -62,9 +69,15 @@ public class ChessMatch {
 
     // funcao responsavel por mover a peca
     private Piece makeMove(Position source, Position target) {
-        Piece p = board.removePiece(source); // peca na posicao de origem vai pra posicao de destino
+        Piece p = board.removePiece(source); // removo peca na posicao de origem
         Piece capturedPiece = board.removePiece(target); // remove a possivel peca da posicao de destino
         board.placePiece(p, target);// coloca a peca na posicao de destino
+
+        if (capturedPiece != null) {
+            piecesOnTheBoard.remove(capturedPiece);
+            capturedPieces.add(capturedPiece);
+        }
+
         return capturedPiece;
     }
 
@@ -90,6 +103,8 @@ public class ChessMatch {
     private void placeNewPiece(char column, int row, ChessPiece piece) {
         // coluna e linha do xadrez
         board.placePiece(piece, new ChessPosition(column, row).toPosition());
+        // adiciona a peca na lista de pecas do tabuleiro
+        piecesOnTheBoard.add(piece);
     }
 
     // funcao responsavel por passar o turno
