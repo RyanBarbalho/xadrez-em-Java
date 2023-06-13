@@ -3,6 +3,7 @@ package chess;
 import chess.pieces.King;
 import chess.pieces.Rook;
 import tabuleiro.Board;
+import tabuleiro.Piece;
 import tabuleiro.Position;
 
 public class ChessMatch {
@@ -27,6 +28,29 @@ public class ChessMatch {
         }
         // retorna a matriz de pecas do xadrez
         return matriz;
+    }
+
+    public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
+        Position source = sourcePosition.toPosition();
+        Position target = targetPosition.toPosition();
+        // valida se existe a peça na source position
+        validateSourcePosition(source);
+        Piece capturedPiece = makeMove(source, target);
+        return (ChessPiece) capturedPiece;
+
+    }
+
+    private Piece makeMove(Position source, Position target) {
+        Piece p = board.removePiece(source); // peca na posicao de origem vai pra posicao de destino
+        Piece capturedPiece = board.removePiece(target); // removi a possivel peca da posicao de destino
+        board.placePiece(p, target);
+        return capturedPiece;
+    }
+
+    public void validateSourcePosition(Position position) {
+        if (!board.thereIsAPiece(position)) {
+            throw new ChessException("Nao ha nenhuma peca na posiçao de origem");
+        }
     }
 
     private void placeNewPiece(char column, int row, ChessPiece piece) {
