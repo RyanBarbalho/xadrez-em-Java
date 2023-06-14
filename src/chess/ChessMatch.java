@@ -1,6 +1,5 @@
 package chess;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -131,7 +130,7 @@ public class ChessMatch {
             throw new IllegalStateException("Nao ha peca para ser promovida");
         }
         if (!string.equals("B") && !string.equals("N") && !string.equals("R") && !string.equals("Q")) {
-            throw new InvalidParameterException("Tipo de peca invalida para promocao");
+            return promoted;
         }
 
         Position pos = promoted.getChessPosition().toPosition();
