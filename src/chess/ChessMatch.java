@@ -93,7 +93,8 @@ public class ChessMatch {
 
     // funcao responsavel por mover a peca
     private Piece makeMove(Position source, Position target) {
-        Piece p = board.removePiece(source); // removo peca na posicao de origem
+        ChessPiece p = (ChessPiece) board.removePiece(source); // removo peca na posicao de origem
+        p.increaseMoveCount(); // incremento o contador de movimentos da peca
         Piece capturedPiece = board.removePiece(target); // remove a possivel peca da posicao de destino
         board.placePiece(p, target);// coloca a peca na posicao de destino
 
@@ -106,9 +107,9 @@ public class ChessMatch {
     }
 
     private void undoMove(Position source, Position target, Piece capturedPiece) {
-        Piece p = board.removePiece(target); // remove a peca da posicao de destino
+        ChessPiece p = (ChessPiece) board.removePiece(target); // remove a peca da posicao de destino
         board.placePiece(p, source); // coloca a peca na posicao de origem
-
+        p.decreaseMoveCount(); // decrementa o contador de movimentos da peca
         if (capturedPiece != null) {
             board.placePiece(capturedPiece, target); // coloca a peca capturada na posicao de destino
             capturedPieces.remove(capturedPiece); // remove a peca da lista de pecas capturadas
