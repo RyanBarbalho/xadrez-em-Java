@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import chess.pieces.King;
 import chess.pieces.Rook;
@@ -13,6 +14,8 @@ public class ChessMatch {
     private Board board;
     private int turn;
     private Color currentPlayer;
+    private boolean check;
+
     private List<ChessPiece> piecesOnTheBoard;
     private List<Piece> capturedPieces = new ArrayList<>();
 
@@ -22,6 +25,7 @@ public class ChessMatch {
         turn = 1;
         currentPlayer = Color.WHITE;
         piecesOnTheBoard = new ArrayList<>();
+        check = false;
         // inicio o setup
         initialSetup();
 
@@ -33,6 +37,10 @@ public class ChessMatch {
 
     public Color getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public boolean getCheck() {
+        return check;
     }
 
     public ChessPiece[][] getPieces() {
@@ -62,6 +70,14 @@ public class ChessMatch {
         validateSourcePosition(source); // se nao existir, lança uma excecao
         validateTargetPosition(source, target);
         Piece capturedPiece = makeMove(source, target); // faz o movimento
+
+        if (testCheck(currentPlayer)) {
+            undoMove(source, target, capturedPiece);
+            throw new ChessException("Voce nao pode se colocar em check");
+        }
+
+        check = (testCheck(opponent(currentPlayer))) ? true : false; // verifica se a partida esta em check
+
         nextTurn();
         return (ChessPiece) capturedPiece;
 
@@ -81,6 +97,17 @@ public class ChessMatch {
         return capturedPiece;
     }
 
+    private void undoMove(Position source, Position target, Piece capturedPiece) {
+        Piece p = board.removePiece(target); // remove a peca da posicao de destino
+        board.placePiece(p, source); // coloca a peca na posicao de origem
+
+        if (capturedPiece != null) {
+            board.placePiece(capturedPiece, target); // coloca a peca capturada na posicao de destino
+            capturedPieces.remove(capturedPiece); // remove a peca da lista de pecas capturadas
+            piecesOnTheBoard.add((ChessPiece) capturedPiece); // adiciona a peca na lista de pecas do tabuleiro
+        }
+    }
+
     // funcao responsavel por validar a posicao de origem
     private void validateSourcePosition(Position position) {
         if (!board.thereIsAPiece(position)) {
@@ -98,6 +125,36 @@ public class ChessMatch {
         if (!board.piece(source).possibleMove(target)) {
             throw new ChessException("A peca escolhida nao pode se mover para a posicao de destino");
         }
+    }
+
+    private Color opponent(Color color) {
+        return (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
+    }
+
+    private ChessPiece king(Color color) {// funcao responsavel por retornar o rei da cor
+        List<Piece> list = piecesOnTheBoard.stream().filter(x -> ((ChessPiece) x).getColor() == color)
+                .collect(Collectors.toList());
+        for (Piece p : list) {
+            if (p instanceof King) {
+                return (ChessPiece) p;
+            }
+        }
+        throw new IllegalStateException("Nao existe o rei da cor " + color + " no tabuleiro");
+    }
+
+    private boolean testCheck(Color color) {
+        Position kingPosition = king(color).getChessPosition().toPosition();
+        List<Piece> opponentPieces = piecesOnTheBoard.stream()
+                .filter(x -> ((ChessPiece) x).getColor() == opponent(color))
+                .collect(Collectors.toList());
+        for (Piece p : opponentPieces) {
+            boolean[][] mat = p.possibleMoves();
+            if (mat[kingPosition.getRow()][kingPosition.getColumn()]) {// se a posicao do rei estiver na matriz de
+                                                                       // movimentos possiveis
+                return true; // (rei em check)
+            }
+        }
+        return false;
     }
 
     private void placeNewPiece(char column, int row, ChessPiece piece) {
