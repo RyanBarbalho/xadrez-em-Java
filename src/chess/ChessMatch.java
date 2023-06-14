@@ -1,5 +1,6 @@
 package chess;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class ChessMatch {
     private boolean check;
     private boolean checkMate;
     private ChessPiece enPassantVulnerable;
+    private ChessPiece promoted;
 
     private List<ChessPiece> piecesOnTheBoard;
     private List<Piece> capturedPieces = new ArrayList<>();
@@ -55,6 +57,10 @@ public class ChessMatch {
 
     public ChessPiece getEnPassantVulnerable() {
         return enPassantVulnerable;
+    }
+
+    public ChessPiece getPromoted() {
+        return promoted;
     }
 
     public ChessPiece[][] getPieces() {
@@ -92,6 +98,16 @@ public class ChessMatch {
 
         ChessPiece movedPiece = (ChessPiece) board.piece(target);
 
+        // #specialmove promotion
+        promoted = null;
+        if (movedPiece instanceof Pawn) {
+            if ((movedPiece.getColor() == Color.WHITE && target.getRow() == 0)
+                    || (movedPiece.getColor() == Color.BLACK && target.getRow() == 7)) {
+                promoted = (ChessPiece) board.piece(target);
+                promoted = replacePromotedPiece("Q");
+            }
+        }
+
         check = (testCheck(opponent(currentPlayer))) ? true : false; // verifica se a partida esta em check
         if (testCheckMate(opponent(currentPlayer))) {
             checkMate = true;
@@ -108,6 +124,35 @@ public class ChessMatch {
         }
         return (ChessPiece) capturedPiece;
 
+    }
+
+    public ChessPiece replacePromotedPiece(String string) {
+        if (promoted == null) {
+            throw new IllegalStateException("Nao ha peca para ser promovida");
+        }
+        if (!string.equals("B") && !string.equals("N") && !string.equals("R") && !string.equals("Q")) {
+            throw new InvalidParameterException("Tipo de peca invalida para promocao");
+        }
+
+        Position pos = promoted.getChessPosition().toPosition();
+        Piece p = board.removePiece(pos); // removo a peca da posicao e guardo em p
+        piecesOnTheBoard.remove(p); // removo a peca da lista de pecas do tabuleiro
+
+        ChessPiece newPiece = newPiece(string, promoted.getColor()); // crio uma nova peca
+        board.placePiece(newPiece, pos); // coloco a nova peca na posicao da peca promovida
+        piecesOnTheBoard.add(newPiece); // adiciono a nova peca na lista de pecas do tabuleiro
+
+        return newPiece;
+    }
+
+    private ChessPiece newPiece(String type, Color color) {
+        if (type.equals("B"))
+            return new Bishop(board, color);
+        if (type.equals("N"))
+            return new Knight(board, color);
+        if (type.equals("Q"))
+            return new Queen(board, color);
+        return new Rook(board, color);
     }
 
     // funcao responsavel por mover a peca
