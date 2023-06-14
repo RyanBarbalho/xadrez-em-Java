@@ -19,7 +19,7 @@ public class App {
         ChessMatch chessMatch = new ChessMatch();
         List<ChessPiece> captured = new ArrayList<>();
 
-        while (true) {
+        while (!chessMatch.getCheckMate()) {// enquanto nao for checkmate
             try {
                 Ui.clearScreen();
                 Ui.printMatch(chessMatch, captured);
@@ -49,6 +49,8 @@ public class App {
                 sc.nextLine();
             }
         }
-
+        Ui.clearScreen();
+        Ui.printMatch(chessMatch, captured);
     }
+
 }
