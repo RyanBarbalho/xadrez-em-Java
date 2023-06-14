@@ -1,8 +1,5 @@
 package app;
 
-import tabuleiro.Position;
-import tabuleiro.Board;
-
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
